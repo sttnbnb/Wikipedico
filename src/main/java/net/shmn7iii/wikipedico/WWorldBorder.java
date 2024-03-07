@@ -17,6 +17,7 @@ public class WWorldBorder {
 
     /**
      * ワールドボーダーを設定
+     * 生存者のうちからランダムで一名をピックし中心とする
      *
      * @param world         対象ワールド
      * @param aliveWPlayers 生存者リスト

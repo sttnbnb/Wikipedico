@@ -2,6 +2,9 @@ package net.shmn7iii.wikipedico;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.WorldType;
+import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -13,6 +16,7 @@ public class WControlPanel {
     public Inventory controlPanelInventory = Bukkit.createInventory(null,18, "Control Panel");
     public ItemStack[] controlPanelInventoryItemStacks = {
             new WControlPanelItem(Material.IRON_SWORD, "GAME START").itemStack,
+            new WControlPanelItem(Material.IRON_SWORD, "DEBUG").itemStack,
             new WControlPanelItem(Material.BARRIER, "GAME END").itemStack,
     };
 
@@ -42,6 +46,15 @@ public class WControlPanel {
                 break;
             case "GAME END":
                 WGame.getInstance().end(e.getWhoClicked().getName());
+                break;
+            case "DEBUG":
+                WorldCreator wc = new WorldCreator("debug");
+
+                wc.environment(World.Environment.NORMAL);
+                wc.type(WorldType.NORMAL);
+
+                wc.createWorld();
+
                 break;
         }
     }
