@@ -1,0 +1,34 @@
+game:
+  teamMaxPlayer: 3
+  preparationTime: 30
+  countDownTime: 5
+  killRankingTimes: 3
+
+locations:
+  world: world
+  lobbySpawn:
+    x: 0.0
+    y: 64.0
+    z: 0.0
+    yaw: 0.0
+    pitch: 0.0
+  deathSpawn:
+    x: 0.0
+    y: 200.0
+    z: 0.0
+  skySpawn:
+    x: 0.0
+    y: 250.0
+    z: 0.0
+
+worldBorder:
+  startDelaySeconds: 15
+  stages:
+    - range: 1000
+      time: 60
+    - range: 500
+      time: 90
+    - range: 200
+      time: 120
+    - range: 100
+      time: 60

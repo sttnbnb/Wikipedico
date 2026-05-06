@@ -1,0 +1,20 @@
+name: Wikipedico
+version: '${project.version}'
+main: net.shmn7iii.wikipedico.Wikipedico
+api-version: '1.21'
+authors: [shmn7iii]
+description: Wikipedico battle royale plugin
+
+commands:
+  wikipedico:
+    description: Wikipedico battle royale commands
+    aliases: [wiki]
+    usage: /wiki <start|end|join|admin|revival|reload>
+
+permissions:
+  wikipedico.admin:
+    description: Game master commands
+    default: op
+  wikipedico.user:
+    description: Player commands
+    default: true
