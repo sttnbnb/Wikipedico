@@ -1,6 +1,12 @@
 name: Wikipedico
-version: '${project.version}'
+version: '0.1.0'
 main: net.shmn7iii.wikipedico.Wikipedico
 api-version: '1.20'
-authors: [shmn7iii, sttnbnb]
+authors: [ shmn7iii, sttnbnb ]
 website: https://wikipedico.studio.site/
+commands:
+  wikipedico:
+    description: Wikipedico Commands
+    aliases: wiki
+    permission: Wikipedico.OP
+    permission-message: You don't have permission.
