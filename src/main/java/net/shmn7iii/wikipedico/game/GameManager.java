@@ -4,6 +4,7 @@ import net.shmn7iii.wikipedico.Wikipedico;
 import net.shmn7iii.wikipedico.player.PlayerStatus;
 import net.shmn7iii.wikipedico.player.WPlayer;
 import net.shmn7iii.wikipedico.team.WTeam;
+import net.shmn7iii.wikipedico.worldborder.WorldBorderController;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -21,10 +22,12 @@ public class GameManager {
 
     private final Wikipedico plugin;
     private final GameContext context = new GameContext();
+    private final WorldBorderController borderController;
     private BukkitTask countdownTask;
 
     public GameManager(Wikipedico plugin) {
         this.plugin = plugin;
+        this.borderController = new WorldBorderController(plugin);
     }
 
     public boolean startGame() {
@@ -68,6 +71,7 @@ public class GameManager {
             p.sendTitle("§a§lGAME START", "", 10, 30, 10);
         });
         Bukkit.broadcastMessage("§a>Game §rゲーム開始！");
+        borderController.start();
     }
 
     public void endGame() {
@@ -79,6 +83,7 @@ public class GameManager {
         }
 
         plugin.setGameStatus(GameStatus.ENDING);
+        borderController.stop();
         Bukkit.broadcastMessage("§c>Game §rゲーム終了！");
 
         showRanking();
