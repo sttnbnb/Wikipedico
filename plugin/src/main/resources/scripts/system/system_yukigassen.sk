@@ -1,8 +1,0 @@
-on right click with snowball:
-    set {use.snowball.%player%} to 1
-
-on projectile hit:
-    if {use.snowball.%shooter%} is 1:
-        create a safe explosion of force {Natto.snowball.power} at the projectile
-    set {use.snowball.%shooter%} to 0
-    set {lastuse.snowball} to shooter
