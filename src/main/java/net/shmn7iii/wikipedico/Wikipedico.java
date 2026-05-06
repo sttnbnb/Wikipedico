@@ -8,6 +8,8 @@ import net.shmn7iii.wikipedico.game.GameStatus;
 import net.shmn7iii.wikipedico.listener.PlayerCombatListener;
 import net.shmn7iii.wikipedico.listener.PlayerLifecycleListener;
 import net.shmn7iii.wikipedico.player.PlayerManager;
+import net.shmn7iii.wikipedico.scoreboard.ActionBarService;
+import net.shmn7iii.wikipedico.scoreboard.ScoreboardService;
 import net.shmn7iii.wikipedico.team.TeamManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,6 +23,8 @@ public final class Wikipedico extends JavaPlugin {
     private PlayerManager playerManager;
     private TeamManager teamManager;
     private GameManager gameManager;
+    private ScoreboardService scoreboardService;
+    private ActionBarService actionBarService;
     private GameStatus gameStatus = GameStatus.LOBBY;
 
     @Override
@@ -32,13 +36,15 @@ public final class Wikipedico extends JavaPlugin {
         playerManager = new PlayerManager();
         teamManager = new TeamManager(configManager, playerManager);
         gameManager = new GameManager(this);
+        scoreboardService = new ScoreboardService(this);
+        actionBarService = new ActionBarService(this);
 
         WikipedicoCommand cmd = new WikipedicoCommand();
         cmd.register(new StartSubCommand(this));
         cmd.register(new EndSubCommand(this));
         cmd.register(new JoinSubCommand(this));
-        cmd.register(new AdminSubCommand());
-        cmd.register(new RevivalSubCommand());
+        cmd.register(new AdminSubCommand(this));
+        cmd.register(new RevivalSubCommand(this));
         cmd.register(new ReloadSubCommand(this));
 
         Objects.requireNonNull(getCommand("wikipedico")).setExecutor(cmd);
@@ -46,6 +52,11 @@ public final class Wikipedico extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerLifecycleListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerCombatListener(this), this);
+
+        getServer().getScheduler().runTaskTimer(this, () -> {
+            scoreboardService.update();
+            actionBarService.update();
+        }, 0L, 5L);
 
         getLogger().info("Wikipedico v" + getDescription().getVersion() + " enabled.");
     }
@@ -61,6 +72,7 @@ public final class Wikipedico extends JavaPlugin {
     public PlayerManager getPlayerManager() { return playerManager; }
     public TeamManager getTeamManager() { return teamManager; }
     public GameManager getGameManager() { return gameManager; }
+    public ScoreboardService getScoreboardService() { return scoreboardService; }
 
     public GameStatus getGameStatus() { return gameStatus; }
     public void setGameStatus(GameStatus status) { this.gameStatus = status; }
