@@ -4,17 +4,16 @@ import net.shmn7iii.wikipedico.Wikipedico;
 import net.shmn7iii.wikipedico.player.PlayerStatus;
 import net.shmn7iii.wikipedico.player.WPlayer;
 import net.shmn7iii.wikipedico.team.WTeam;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.title.Title;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Sound;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +37,7 @@ public class GameManager {
         countdownTask = new PreparationCountdown(plugin, this, prepTime, countDownTime)
             .runTaskTimer(plugin, 0L, 20L);
 
-        plugin.getServer().broadcast(Component.text("§a>Game §rゲームを開始します。準備時間: §e" + prepTime + "秒"));
+        Bukkit.broadcastMessage("§a>Game §rゲームを開始します。準備時間: §e" + prepTime + "秒");
         return true;
     }
 
@@ -58,25 +57,17 @@ public class GameManager {
                 p.setGameMode(GameMode.SURVIVAL);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 4, false, false));
                 p.getInventory().clear();
-                // エリトラ装備
-                p.getInventory().setChestplate(new org.bukkit.inventory.ItemStack(org.bukkit.Material.ELYTRA));
+                p.getInventory().setChestplate(new ItemStack(Material.ELYTRA));
             } else {
                 wp.setStatus(PlayerStatus.SPECTATOR);
                 p.setGameMode(GameMode.SPECTATOR);
             }
         }
 
-        Title startTitle = Title.title(
-            Component.text("§a§lGAME START"),
-            Component.empty(),
-            Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(1500), Duration.ofMillis(500))
-        );
         plugin.getServer().getOnlinePlayers().forEach(p -> {
-            p.showTitle(startTitle);
-            p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 1f);
+            p.sendTitle("§a§lGAME START", "", 10, 30, 10);
         });
-
-        plugin.getServer().broadcast(Component.text("§a>Game §rゲーム開始！"));
+        Bukkit.broadcastMessage("§a>Game §rゲーム開始！");
     }
 
     public void endGame() {
@@ -88,11 +79,10 @@ public class GameManager {
         }
 
         plugin.setGameStatus(GameStatus.ENDING);
-        plugin.getServer().broadcast(Component.text("§c>Game §rゲーム終了！"));
+        Bukkit.broadcastMessage("§c>Game §rゲーム終了！");
 
         showRanking();
 
-        // 10秒後にLOBBYへ
         plugin.getServer().getScheduler().runTaskLater(plugin, this::resetToLobby, 200L);
     }
 
@@ -106,11 +96,9 @@ public class GameManager {
             context.addKill(killer.getUniqueId());
             WPlayer killerWp = plugin.getPlayerManager().get(killer);
             if (killerWp != null) killerWp.addKill();
-            plugin.getServer().broadcast(
-                Component.text("§b" + killer.getName() + " §r✈► §c" + victim.getName())
-            );
+            Bukkit.broadcastMessage("§b" + killer.getName() + " §r✈► §c" + victim.getName());
         } else {
-            plugin.getServer().broadcast(Component.text("§c" + victim.getName() + " §rが死亡しました。"));
+            Bukkit.broadcastMessage("§c" + victim.getName() + " §rが死亡しました。");
         }
 
         checkVictory();
@@ -123,10 +111,8 @@ public class GameManager {
         if (alive.size() <= 1) {
             if (!alive.isEmpty()) {
                 WTeam winner = alive.iterator().next();
-                plugin.getServer().broadcast(
-                    Component.text(winner.getColor().getChatColor() + winner.getColor().getDisplayName()
-                        + "チーム §r§lの勝利！")
-                );
+                Bukkit.broadcastMessage(winner.getColor().getChatColor() + winner.getColor().getDisplayName()
+                    + "チーム §r§lの勝利！");
             }
             endGame();
         }
@@ -139,17 +125,15 @@ public class GameManager {
             .limit(top)
             .collect(Collectors.toList());
 
-        plugin.getServer().broadcast(Component.text("§6§l--- キルランキング ---"));
+        Bukkit.broadcastMessage("§6§l--- キルランキング ---");
         for (int i = 0; i < sorted.size(); i++) {
             var entry = sorted.get(i);
-            String name = Optional.ofNullable(plugin.getServer().getPlayer(entry.getKey()))
+            String name = Optional.ofNullable(Bukkit.getPlayer(entry.getKey()))
                 .map(Player::getName)
                 .orElse(entry.getKey().toString().substring(0, 8));
-            plugin.getServer().broadcast(
-                Component.text("§e" + (i + 1) + "位  §f" + name + "  §b" + entry.getValue() + "kill")
-            );
+            Bukkit.broadcastMessage("§e" + (i + 1) + "位  §f" + name + "  §b" + entry.getValue() + "kill");
         }
-        plugin.getServer().broadcast(Component.text("§6§l-------------------"));
+        Bukkit.broadcastMessage("§6§l-------------------");
     }
 
     private void resetToLobby() {
@@ -165,6 +149,6 @@ public class GameManager {
             p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
         }
 
-        plugin.getServer().broadcast(Component.text("§a>Game §rロビーに戻りました。"));
+        Bukkit.broadcastMessage("§a>Game §rロビーに戻りました。");
     }
 }
