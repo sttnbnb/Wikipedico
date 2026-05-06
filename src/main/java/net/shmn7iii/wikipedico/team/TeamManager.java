@@ -72,7 +72,8 @@ public class TeamManager {
     }
 
     public void resetAll() {
-        for (WTeam team : teams.values()) {
+        List<WTeam> snapshot = new ArrayList<>(teams.values());
+        for (WTeam team : snapshot) {
             team.getMembers().forEach(uuid -> {
                 WPlayer wp = playerManager.get(uuid);
                 if (wp != null) {
@@ -80,7 +81,6 @@ public class TeamManager {
                     wp.setJoined(false);
                 }
             });
-            // チームのメンバーリストをクリアするため新規作成
             teams.put(team.getId(), new WTeam(team.getColor()));
         }
     }
