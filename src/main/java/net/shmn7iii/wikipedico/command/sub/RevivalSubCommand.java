@@ -31,14 +31,14 @@ public class RevivalSubCommand implements SubCommand {
             sender.sendMessage("[Wikipedico] ゲームが進行中ではありません。");
             return true;
         }
-        if (args.length < 1) {
+        if (args.length < 2) {
             sender.sendMessage("[Wikipedico] 使い方: " + usage());
             return true;
         }
 
-        Player target = Bukkit.getPlayer(args[0]);
+        Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage("[Wikipedico] プレイヤーが見つかりません: " + args[0]);
+            sender.sendMessage("[Wikipedico] プレイヤーが見つかりません: " + args[1]);
             return true;
         }
 
@@ -59,10 +59,10 @@ public class RevivalSubCommand implements SubCommand {
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
-        if (args.length == 1) {
+        if (args.length == 2) {
             return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
-                .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
+                .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                 .toList();
         }
         return List.of();
