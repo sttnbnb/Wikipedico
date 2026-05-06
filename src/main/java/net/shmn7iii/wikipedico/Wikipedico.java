@@ -43,6 +43,7 @@ public final class Wikipedico extends JavaPlugin {
         cmd.register(new StartSubCommand(this));
         cmd.register(new EndSubCommand(this));
         cmd.register(new JoinSubCommand(this));
+        cmd.register(new ModeSubCommand(this));
         cmd.register(new AdminSubCommand(this));
         cmd.register(new RevivalSubCommand(this));
         cmd.register(new ReloadSubCommand(this));

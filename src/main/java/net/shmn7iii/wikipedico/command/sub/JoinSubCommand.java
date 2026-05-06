@@ -3,6 +3,8 @@ package net.shmn7iii.wikipedico.command.sub;
 import net.shmn7iii.wikipedico.Wikipedico;
 import net.shmn7iii.wikipedico.command.SubCommand;
 import net.shmn7iii.wikipedico.game.GameStatus;
+import net.shmn7iii.wikipedico.game.mode.SoloMode;
+import net.shmn7iii.wikipedico.player.WPlayer;
 import net.shmn7iii.wikipedico.team.TeamColor;
 import net.shmn7iii.wikipedico.team.TeamManager;
 import org.bukkit.Bukkit;
@@ -23,16 +25,59 @@ public class JoinSubCommand implements SubCommand {
 
     @Override public String name() { return "join"; }
     @Override public String permission() { return "wikipedico.user"; }
-    @Override public String usage() { return "/wiki join <team> [player]"; }
+    @Override public String usage() { return "/wiki join [team] [player]"; }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (plugin.getGameStatus() != GameStatus.LOBBY) {
-            sender.sendMessage("[Wikipedico] チームへの参加はロビー中のみ可能です。");
+            sender.sendMessage("[Wikipedico] 参加はロビー中のみ可能です。");
             return true;
         }
+
+        boolean isSolo = plugin.getGameManager().getMode() instanceof SoloMode;
+
+        if (isSolo) {
+            return joinSolo(sender, args);
+        } else {
+            return joinTeam(sender, args);
+        }
+    }
+
+    private boolean joinSolo(CommandSender sender, String[] args) {
+        Player target;
+        if (args.length >= 2) {
+            if (!sender.hasPermission("wikipedico.admin")) {
+                sender.sendMessage("[Wikipedico] 他のプレイヤーを参加させる権限がありません。");
+                return true;
+            }
+            target = Bukkit.getPlayer(args[1]);
+            if (target == null) {
+                sender.sendMessage("[Wikipedico] プレイヤー " + args[1] + " が見つかりません。");
+                return true;
+            }
+        } else if (sender instanceof Player p) {
+            target = p;
+        } else {
+            sender.sendMessage("[Wikipedico] コンソールからはプレイヤー名を指定してください。");
+            return true;
+        }
+
+        WPlayer wp = plugin.getPlayerManager().get(target);
+        if (wp == null) {
+            sender.sendMessage("[Wikipedico] プレイヤーが登録されていません。");
+            return true;
+        }
+        wp.setJoined(true);
+        target.sendMessage("[Wikipedico] ゲームに参加しました。");
+        if (!target.equals(sender)) {
+            sender.sendMessage("[Wikipedico] " + target.getName() + " をゲームに参加させました。");
+        }
+        return true;
+    }
+
+    private boolean joinTeam(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage("[Wikipedico] 使い方: " + usage());
+            sender.sendMessage("[Wikipedico] 使い方: /wiki join <team> [player]");
             return true;
         }
 
@@ -77,7 +122,8 @@ public class JoinSubCommand implements SubCommand {
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
-        if (args.length == 2) {
+        boolean isSolo = plugin.getGameManager().getMode() instanceof SoloMode;
+        if (args.length == 2 && !isSolo) {
             return Arrays.stream(TeamColor.values())
                 .map(TeamColor::getId)
                 .filter(id -> id.startsWith(args[1].toLowerCase()))
