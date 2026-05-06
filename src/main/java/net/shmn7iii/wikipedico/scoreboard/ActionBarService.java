@@ -1,11 +1,11 @@
 package net.shmn7iii.wikipedico.scoreboard;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.shmn7iii.wikipedico.Wikipedico;
 import net.shmn7iii.wikipedico.game.GameStatus;
 import net.shmn7iii.wikipedico.player.PlayerStatus;
 import net.shmn7iii.wikipedico.player.WPlayer;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
 public class ActionBarService {
@@ -17,25 +17,20 @@ public class ActionBarService {
     }
 
     public void update() {
-        GameStatus status = plugin.getGameStatus();
-        if (status != GameStatus.PLAYING) return;
+        if (plugin.getGameStatus() != GameStatus.PLAYING) return;
 
         int survivors = (int) plugin.getPlayerManager().getAll().stream()
             .filter(wp -> wp.getStatus() == PlayerStatus.ALIVE)
             .count();
         int aliveTeams = plugin.getTeamManager().aliveTeams().size();
 
-        Component bar = Component.text("生存: ", NamedTextColor.GRAY)
-            .append(Component.text(survivors + "人", NamedTextColor.GREEN))
-            .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
-            .append(Component.text("残チーム: ", NamedTextColor.GRAY))
-            .append(Component.text(aliveTeams + "", NamedTextColor.YELLOW));
+        String text = "§a生存: §f" + survivors + "人  §8|  §e残チーム: §f" + aliveTeams;
 
         for (Player p : plugin.getServer().getOnlinePlayers()) {
             WPlayer wp = plugin.getPlayerManager().get(p);
             if (wp == null) continue;
             if (wp.getStatus() == PlayerStatus.ALIVE || wp.getStatus() == PlayerStatus.SPECTATOR) {
-                p.sendActionBar(bar);
+                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(text));
             }
         }
     }
