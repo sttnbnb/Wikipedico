@@ -1,12 +1,8 @@
 package net.shmn7iii.wikipedico.game;
 
 import net.shmn7iii.wikipedico.Wikipedico;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Sound;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.time.Duration;
 
 public class PreparationCountdown extends BukkitRunnable {
 
@@ -31,13 +27,8 @@ public class PreparationCountdown extends BukkitRunnable {
         }
 
         if (remaining <= countDownTime) {
-            Title title = Title.title(
-                Component.text("§e" + remaining),
-                Component.text("§7ゲーム開始まで"),
-                Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(600), Duration.ofMillis(200))
-            );
             plugin.getServer().getOnlinePlayers().forEach(p -> {
-                p.showTitle(title);
+                p.sendTitle("§e" + remaining, "§7ゲーム開始まで", 4, 12, 4);
                 p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             });
         }
