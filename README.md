@@ -6,58 +6,59 @@ About : https://wikipedico.studio.site
 
 ## Specification
 
-Minecraft Version : Minecraft Java Edition 1.16.4, 1.16.5  
-Supported Server : Spigot 1.16.4, 1.16.5  
-External Plugins : Skript 2.5.1, skQuery 4.1.4
+Minecraft Version : Minecraft Java Edition 1.21.4  
+Supported Server : Spigot 1.21.4  
+Language : Java 25
 
-## File Structure
+## Features
 
-.sk and .mcfunction files are included in src/main/resource folder.
+- チーム戦バトルロイヤル（最大7チーム）
+- 準備カウントダウン → スカイスポーン → エリトラ降下
+- ワールドボーダー段階収縮
+- キルランキング表示
+- サイドバー / アクションバー UI
 
+## Build
+
+```bash
+mvn clean package
 ```
-.
-└── Ver.5.0/plugin/src/main/resources
-	├── datapacks/ibuibu/data/
-	|	├── minecraft/tags/functions/	
-	|	|	├── load.json                       # ワールドロード時実行
-	|	|	└── tick.json                       # 毎tick実行
-	|	└── shimashima/functions/
-	|		├── wb_range/                       # ワールドボーダー範囲設定用
-	|		|	└── *.mcfunction
-	|		├── wb_time/                        # ワールドボーダー収縮時間設定用
-	|		|	└── *.mcfunction
-	|		├── 00_every_tick.mcfunction        # 毎チック実行
-	|		├── 00_load.mcfunction              # ロード時実行
-	|		├── 01_game_end.mcfunction          # ゲーム終了時実行
-	|		├── 01_game_start.mcfunction        # ゲームスタート時実行
-	|		├── 01_goodbye_item.mcfunction      # ゲーム中所持禁止アイテムをクリアー
-	|		├── 01_toggle_nametag.mcfunction    # ネームタグの表示非表示
-	|		├── 02_admin-book.mcfunction        # admin用の本を渡す
-	|		├── 02_murabito.mcfunction          # 商人召喚用スポーンエッグ
-	|		└── boarder_set.mcfunction          # ワールドボーダーをセット
-	├── variables/
-	|	└── variables.csv                           #Skript用変数ファイル
-	├── scripts/
-	|	├── command/                                # 利用ケース別にコマンドファイル
-	|	|	├── command_dev.sk                      # 開発用コマンド
-	|	|	├── command_gen.sk                      # 一般ユーザー用コマンド
-	|	|	└── command_gm.sk                       # ゲームマスター用コマンド
-	|	|
-	|	├── shop/                                   # モード別にショップ用ファイル
-	|	|	├── shop_buy.sk                         # 購入内容
-	|	|	└── shop_sell.sk                        # 売却内容
-	|	|
-	|	├── system/                                 # 各種システム処理用ファイル
-	|	|	├── system_asure.sk                     # アスレチック
-	|	|	├── system_daruma.sk                    # だるまさんが転んだ
-	|	|	├── system_main.sk                      # メイン
-	|	|	└── system_team.sk                      # チーム戦
-	|	|	└── system_yukigassen.sk                # 雪合戦
-	|	|
-	|	├── config.sk                               # 設定ファイル(内部処理)
-	|	├── function.sk                             # 全functionが記述
-	|	└── welcome.sk                              # join,quit,loadに関する内容
-	|
-	├── config.yml                                      # wikipedico用configファイル(実働)
-	└── plugin.yml                                      # プラグイン本体用yaml
+
+成果物: `target/Wikipedico-<version>.jar`
+
+## Commands
+
+| コマンド | 権限 | 説明 |
+|---|---|---|
+| `/wiki start` | admin | ゲーム開始（準備フェーズへ） |
+| `/wiki end` | admin | ゲーム強制終了 |
+| `/wiki join <team> [player]` | user | チームに参加 |
+| `/wiki admin <player>` | admin | ADMIN ステータストグル |
+| `/wiki revival <player>` | admin | 死亡プレイヤーを復活 |
+| `/wiki reload` | admin | config 再読込 |
+
+チーム名: `red` / `blue` / `yellow` / `green` / `orange` / `purple` / `black`
+
+## Configuration
+
+`plugins/Wikipedico/config.yml` で設定します。
+
+```yaml
+game:
+  teamMaxPlayer: 3       # チームの最大人数
+  preparationTime: 30    # 準備時間（秒）
+  countDownTime: 5       # カウントダウン開始秒数
+  killRankingTimes: 3    # キルランキング表示人数
+locations:
+  world: world
+  lobbySpawn:  { x: 0, y: 64, z: 0 }
+  deathSpawn:  { x: 0, y: 200, z: 0 }
+  skySpawn:    { x: 0, y: 250, z: 0 }
+worldBorder:
+  startDelaySeconds: 15
+  stages:
+    - { range: 1000, time: 60 }
+    - { range: 500,  time: 90 }
+    - { range: 200,  time: 120 }
+    - { range: 100,  time: 60 }
 ```
