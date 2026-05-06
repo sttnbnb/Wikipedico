@@ -1,12 +1,12 @@
 package net.shmn7iii.wikipedico.game;
 
 import net.shmn7iii.wikipedico.Wikipedico;
+import net.shmn7iii.wikipedico.game.mode.GameMode;
+import net.shmn7iii.wikipedico.game.mode.TeamMode;
 import net.shmn7iii.wikipedico.player.PlayerStatus;
 import net.shmn7iii.wikipedico.player.WPlayer;
-import net.shmn7iii.wikipedico.team.WTeam;
 import net.shmn7iii.wikipedico.worldborder.WorldBorderController;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,7 +15,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GameManager {
@@ -24,10 +27,19 @@ public class GameManager {
     private final GameContext context = new GameContext();
     private final WorldBorderController borderController;
     private BukkitTask countdownTask;
+    private GameMode currentMode = new TeamMode();
 
     public GameManager(Wikipedico plugin) {
         this.plugin = plugin;
         this.borderController = new WorldBorderController(plugin);
+    }
+
+    public GameMode getMode() { return currentMode; }
+
+    public boolean setMode(GameMode mode) {
+        if (plugin.getGameStatus() != GameStatus.LOBBY) return false;
+        this.currentMode = mode;
+        return true;
     }
 
     public boolean startGame() {
@@ -40,7 +52,7 @@ public class GameManager {
         countdownTask = new PreparationCountdown(plugin, this, prepTime, countDownTime)
             .runTaskTimer(plugin, 0L, 20L);
 
-        Bukkit.broadcastMessage("§a>Game §rゲームを開始します。準備時間: §e" + prepTime + "秒");
+        Bukkit.broadcastMessage("§a>Game §r[" + currentMode.getDisplayName() + "] ゲームを開始します。準備時間: §e" + prepTime + "秒");
         return true;
     }
 
@@ -57,19 +69,17 @@ public class GameManager {
             if (wp.isJoined()) {
                 wp.setStatus(PlayerStatus.ALIVE);
                 if (skySpawn != null) p.teleport(skySpawn);
-                p.setGameMode(GameMode.SURVIVAL);
+                p.setGameMode(org.bukkit.GameMode.SURVIVAL);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 4, false, false));
                 p.getInventory().clear();
                 p.getInventory().setChestplate(new ItemStack(Material.ELYTRA));
             } else {
                 wp.setStatus(PlayerStatus.SPECTATOR);
-                p.setGameMode(GameMode.SPECTATOR);
+                p.setGameMode(org.bukkit.GameMode.SPECTATOR);
             }
         }
 
-        plugin.getServer().getOnlinePlayers().forEach(p -> {
-            p.sendTitle("§a§lGAME START", "", 10, 30, 10);
-        });
+        plugin.getServer().getOnlinePlayers().forEach(p -> p.sendTitle("§a§lGAME START", "", 10, 30, 10));
         Bukkit.broadcastMessage("§a>Game §rゲーム開始！");
         borderController.start();
     }
@@ -96,31 +106,18 @@ public class GameManager {
         if (wp == null) return;
 
         wp.setStatus(PlayerStatus.DEAD);
-
-        if (killer != null) {
-            context.addKill(killer.getUniqueId());
-            WPlayer killerWp = plugin.getPlayerManager().get(killer);
-            if (killerWp != null) killerWp.addKill();
-            Bukkit.broadcastMessage("§b" + killer.getName() + " §r✈► §c" + victim.getName());
-        } else {
-            Bukkit.broadcastMessage("§c" + victim.getName() + " §rが死亡しました。");
-        }
-
+        currentMode.onDeath(victim, killer, plugin, context);
         checkVictory();
     }
 
     public void checkVictory() {
         if (plugin.getGameStatus() != GameStatus.PLAYING) return;
 
-        Set<WTeam> alive = plugin.getTeamManager().aliveTeams();
-        if (alive.size() <= 1) {
-            if (!alive.isEmpty()) {
-                WTeam winner = alive.iterator().next();
-                Bukkit.broadcastMessage(winner.getColor().getChatColor() + winner.getColor().getDisplayName()
-                    + "チーム §r§lの勝利！");
-            }
+        Optional<String> result = currentMode.checkVictory(plugin);
+        result.ifPresent(msg -> {
+            Bukkit.broadcastMessage(msg);
             endGame();
-        }
+        });
     }
 
     private void showRanking() {
@@ -149,7 +146,7 @@ public class GameManager {
 
         Location lobbySpawn = plugin.getConfigManager().lobbySpawn();
         for (Player p : plugin.getServer().getOnlinePlayers()) {
-            p.setGameMode(GameMode.ADVENTURE);
+            p.setGameMode(org.bukkit.GameMode.ADVENTURE);
             if (lobbySpawn != null) p.teleport(lobbySpawn);
             p.getActivePotionEffects().forEach(e -> p.removePotionEffect(e.getType()));
         }
