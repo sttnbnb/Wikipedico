@@ -37,7 +37,10 @@ public class PlayerLifecycleListener implements Listener {
         plugin.getTeamManager().leave(player);
 
         if (gameStatus == GameStatus.PLAYING) {
-            // PLAYING中の退出は死亡扱いとして処理 (GameManagerへ委譲は Phase4 で)
+            var wp = plugin.getPlayerManager().get(player);
+            if (wp != null && wp.getStatus() == net.shmn7iii.wikipedico.player.PlayerStatus.ALIVE) {
+                plugin.getGameManager().onDeath(player, null);
+            }
         }
 
         plugin.getPlayerManager().unregister(player);
