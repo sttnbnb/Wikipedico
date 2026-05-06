@@ -53,6 +53,9 @@ public final class Wikipedico extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerLifecycleListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerCombatListener(this), this);
 
+        // プラグイン有効化時点で既にオンラインのプレイヤーを登録
+        getServer().getOnlinePlayers().forEach(playerManager::register);
+
         getServer().getScheduler().runTaskTimer(this, () -> {
             scoreboardService.update();
             actionBarService.update();
